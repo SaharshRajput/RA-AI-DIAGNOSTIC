@@ -15,21 +15,23 @@ device = torch.device("cpu") # Use CPU for stable web deployment
 labels = ['Healthy', 'Moderate', 'Severe']
 
 @st.cache_resource
+
 def load_model():
     model_path = 'model.pth'
-    # Use the File ID from your Google Drive share link
     file_id = '1O9qvSnFfwUK2HeuoszQvo6_ShfpL_WhD' 
     url = f'https://drive.google.com/uc?export=download&id={file_id}'
     
-    # This block checks if the 43MB file is already there; if not, it downloads it
     if not os.path.exists(model_path):
-        with st.spinner("Downloading AI Model weights (43MB)... Please wait."):
+        with st.spinner("Downloading AI Model weights (43MB)..."):
             urllib.request.urlretrieve(url, model_path)
             
-    # Load the brain of the AI
     model = models.resnet18(weights=None)
     model.fc = torch.nn.Linear(model.fc.in_features, 3)
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu'),weights_only=False))
+    
+    # CORRECTED LINE: weights_only=False must be INSIDE torch.load
+    state_dict = torch.load(model_path, map_location='cpu', weights_only=False)
+    model.load_state_dict(state_dict)
+    
     model.eval()
     return model
 
