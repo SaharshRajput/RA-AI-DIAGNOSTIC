@@ -132,9 +132,3 @@ if uploaded_file is not None:
 
     st.success("✅ Analysis successfully rendered.")
     # Create a horizontal bar chart for probabilities
-st.subheader("Diagnostic Confidence")
-for i, label in enumerate(labels):
-    score = prob[0][i].item()
-    st.write(f"**{label}**")
-    st.progress(score) # This creates a visual bar
-    st.write(f"{score*100:.1f}%")
