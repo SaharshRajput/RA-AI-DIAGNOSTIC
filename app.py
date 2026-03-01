@@ -29,7 +29,7 @@ def load_model():
     # Load the brain of the AI
     model = models.resnet18(weights=None)
     model.fc = torch.nn.Linear(model.fc.in_features, 3)
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')),weight_only=False)
     model.eval()
     return model
 
