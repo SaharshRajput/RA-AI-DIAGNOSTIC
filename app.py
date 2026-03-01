@@ -68,8 +68,8 @@ def get_analysis(img_file, model):
     i
 
 # --- Update your transform block ---
-img = Image.open(img_file).convert('RGB')
-img = apply_clahe(img) # Add this line before transforms
+    img = Image.open(img_file).convert('RGB')
+    img = apply_clahe(img) # Add this line before transforms
     target_layer = model.layer4[-1]
     features = []
     def hook_feat(module, input, output): features.append(output)
