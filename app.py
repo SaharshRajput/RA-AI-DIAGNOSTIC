@@ -48,13 +48,11 @@ def load_model():
 # --- GRAD-CAM LOGIC (THE ANALYSIS) ---
 def get_analysis(img_file, model):
     def apply_clahe(img):
-    # Convert PIL to Open CV format
-    img_np = np.array(img)
-    # Convert to Grayscale if it's RGB
-    if len(img_np.shape) == 3:
-        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-    else:
-        gray = img_np
+        img_np = np.array(img)
+        if len(img_np.shape) == 3:
+            gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+        else:
+            gray = img_np
         
     # Apply CLAHE
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
@@ -63,6 +61,11 @@ def get_analysis(img_file, model):
     # Convert back to RGB for ResNet
     final_img = cv2.cvtColor(cl1, cv2.COLOR_GRAY2RGB)
     return Image.fromarray(final_img)
+        
+    # Convert PIL to Open CV format
+    
+    # Convert to Grayscale if it's RGB
+    i
 
 # --- Update your transform block ---
 img = Image.open(img_file).convert('RGB')
