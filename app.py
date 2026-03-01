@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 import cv2
 import os
-
+import urllib.request
 # --- PAGE SETUP ---
 st.set_page_config(page_title="RA AI Diagnostic", layout="wide")
 st.title("🦴 RA Severity Predictor & Joint Analysis")
@@ -27,7 +27,7 @@ def load_model():
             urllib.request.urlretrieve(url, model_path)
             
     # Load the brain of the AI
-    model = models.resnet18()
+    model = models.resnet18(weights=None)
     model.fc = torch.nn.Linear(model.fc.in_features, 3)
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()
