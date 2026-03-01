@@ -19,7 +19,19 @@ labels = ['Healthy', 'Moderate', 'Severe']
 @st.cache_resource
 def load_model():
     model_path = 'model.pth' # The file is now local!
+          # In Colab, change your model definition to this:
+    model = models.resnet18(weights='IMAGENET1K_V1')
     
+    # This freezes the early layers so the AI keeps its "knowledge" of shapes
+    # but learns the "specifics" of your X-rays in the last layers
+    for param in model.parameters():
+        param.requires_grad = False
+    
+    # Replace the final layer for your 3 classes (Healthy, Moderate, Severe)
+    model.fc = torch.nn.Linear(model.fc.in_features, 3)
+    
+    # When you train, only the last layer will learn initially
+    optimizer = torch.optim.Adam(model.fc.parameters(), lr=0.001)
     if not os.path.exists(model_path):
         st.error("Model file not found. Please ensure 'model.pth' is uploaded to GitHub.")
         st.stop()
@@ -35,6 +47,26 @@ def load_model():
     return model
 # --- GRAD-CAM LOGIC (THE ANALYSIS) ---
 def get_analysis(img_file, model):
+    def apply_clahe(img):
+    # Convert PIL to Open CV format
+    img_np = np.array(img)
+    # Convert to Grayscale if it's RGB
+    if len(img_np.shape) == 3:
+        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+    else:
+        gray = img_np
+        
+    # Apply CLAHE
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    cl1 = clahe.apply(gray)
+    
+    # Convert back to RGB for ResNet
+    final_img = cv2.cvtColor(cl1, cv2.COLOR_GRAY2RGB)
+    return Image.fromarray(final_img)
+
+# --- Update your transform block ---
+img = Image.open(img_file).convert('RGB')
+img = apply_clahe(img) # Add this line before transforms
     target_layer = model.layer4[-1]
     features = []
     def hook_feat(module, input, output): features.append(output)
@@ -96,3 +128,10 @@ if uploaded_file is not None:
         st.info("The AI specifically analyzes the joint spaces for narrowing and bone erosion.")
 
     st.success("✅ Analysis successfully rendered.")
+    # Create a horizontal bar chart for probabilities
+st.subheader("Diagnostic Confidence")
+for i, label in enumerate(labels):
+    score = prob[0][i].item()
+    st.write(f"**{label}**")
+    st.progress(score) # This creates a visual bar
+    st.write(f"{score*100:.1f}%")
