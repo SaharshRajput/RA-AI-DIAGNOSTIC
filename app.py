@@ -14,27 +14,36 @@ st.title("🦴 RA Severity Predictor & Joint Analysis")
 device = torch.device("cpu") # Use CPU for stable web deployment
 labels = ['Healthy', 'Moderate', 'Severe']
 
-@st.cache_resource
 
+
+@st.cache_resource
 def load_model():
     model_path = 'model.pth'
-    file_id = '1O9qvSnFfwUK2HeuoszQvo6_ShfpL_WhD' 
-    url = f'https://drive.google.com/uc?export=download&id={file_id}'
+    file_id = '1O9qvSnFfwUK2HeuoszQvo6_ShfpL_WhD'
+    
+    # This specific URL format helps bypass the Google Drive "Warning" page
+    url = f'https://drive.google.com/uc?export=download&confirm=t&id={file_id}'
     
     if not os.path.exists(model_path):
-        with st.spinner("Downloading AI Model weights (43MB)..."):
+        with st.spinner("Downloading AI Model... (This may take a minute)"):
+            # If a failed/HTML file exists, remove it first
+            if os.path.exists(model_path):
+                os.remove(model_path)
             urllib.request.urlretrieve(url, model_path)
             
+    # Verify file size - if it's less than 1MB, it's definitely an error page
+    if os.path.getsize(model_path) < 1000000:
+        st.error("Error: The downloaded file is too small. Google Drive blocked the direct download.")
+        st.stop()
+
     model = models.resnet18(weights=None)
     model.fc = torch.nn.Linear(model.fc.in_features, 3)
     
-    # CORRECTED LINE: weights_only=False must be INSIDE torch.load
+    # Use weights_only=False for older .pth files
     state_dict = torch.load(model_path, map_location='cpu', weights_only=False)
     model.load_state_dict(state_dict)
-    
     model.eval()
     return model
-
 # --- GRAD-CAM LOGIC (THE ANALYSIS) ---
 def get_analysis(img_file, model):
     target_layer = model.layer4[-1]
