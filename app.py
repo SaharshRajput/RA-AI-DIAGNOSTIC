@@ -12,7 +12,7 @@ st.title("🦴 RA Severity Predictor & Joint Analysis")
 
 # --- MODEL LOADING ---
 device = torch.device("cpu") 
-labels = ['Severe', 'Moderate', 'Healthy']
+labels = ['Healthy', 'Moderate', 'Severe']
 
 @st.cache_resource
 def load_model():
