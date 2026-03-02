@@ -115,7 +115,11 @@ if uploaded_file is not None:
             confidence = prob[0][i].item()
             st.write(f"**{label}** ({confidence*100:.1f}%)")
             st.progress(confidence)
-            
+            # Finish the Low Confidence Warning logic
+        if diff < 0.15: # If the difference between top 2 choices is less than 15%
+            st.warning("⚠️ High Uncertainty: The model is struggling to distinguish between stages. Clinical correlation is advised.")
+        
+        st.info("💡 **AI Insight:** Red areas in the heatmap indicate where the model detected the most significant joint features.")
         # Low Confidence Warning
         top_two = torch.topk(prob, 2)
         diff = top_two.values[0][0] - top_two.values[0][1]
