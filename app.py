@@ -116,10 +116,16 @@ if uploaded_file is not None:
             st.write(f"**{label}** ({confidence*100:.1f}%)")
             st.progress(confidence)
             # Finish the Low Confidence Warning logic
-        if diff < 0.15: # If the difference between top 2 choices is less than 15%
-            st.warning("⚠️ High Uncertainty: The model is struggling to distinguish between stages. Clinical correlation is advised.")
-        
-        st.info("💡 **AI Insight:** Red areas in the heatmap indicate where the model detected the most significant joint features.")
-        # Low Confidence Warning
+        # Low Confidence Warning Logic
         top_two = torch.topk(prob, 2)
+        # Calculate the difference between the 1st and 2nd highest probability
         diff = top_two.values[0][0] - top_two.values[0][1]
+
+        # Display the warning if the model is unsure
+        if diff < 0.15: 
+            st.warning("⚠️ **High Uncertainty:** The model is finding it difficult to distinguish between two categories. Clinical correlation is highly recommended.")
+        elif res_conf < 50:
+            st.error("❌ **Low Confidence:** The AI is not confident in this prediction. Please ensure the X-ray is clear and centered.")
+        else:
+            st.success("✅ **High Confidence Analysis:** The model has identified clear features for this classification.")
+st.info("💡 **AI Insight:** Red areas in the 'AI Focus' heatmap (Center) indicate the specific joint regions the model used to determine the severity level.")
